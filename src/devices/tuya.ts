@@ -15780,10 +15780,16 @@ export const definitions: DefinitionWithExtend[] = [
             "_TZE204_ad2jkxwh",
             "_TZE204_72bewjky",
         ]),
-        model: "TS0601_switch_8",
-        vendor: "ZYXH",
+        model: "TS0601_switch_8_gang",
+        vendor: "Tuya",
         description: "8 gang switch",
         extend: [tuya.modernExtend.tuyaBase({dp: true})],
+        configure: async (device, coordinatorEndpoint) => {
+            const endpoint = device.getEndpoint(1);
+            await reporting.bind(endpoint, coordinatorEndpoint, ["genOnOff"]);
+            device.powerSource = "Mains (single phase)";
+            device.save();
+        },
         exposes: [
             tuya.exposes.switch().withEndpoint("l1"),
             tuya.exposes.switch().withEndpoint("l2"),
@@ -15793,6 +15799,8 @@ export const definitions: DefinitionWithExtend[] = [
             tuya.exposes.switch().withEndpoint("l6"),
             tuya.exposes.switch().withEndpoint("l7"),
             tuya.exposes.switch().withEndpoint("l8"),
+            tuya.exposes.powerOnBehavior(),
+            tuya.exposes.indicatorModeNoneRelayPos(),
         ],
         endpoint: (device) => {
             return {l1: 1, l2: 1, l3: 1, l4: 1, l5: 1, l6: 1, l7: 1, l8: 1};
@@ -15808,6 +15816,24 @@ export const definitions: DefinitionWithExtend[] = [
                 [6, "state_l6", tuya.valueConverter.onOff],
                 [0x65, "state_l7", tuya.valueConverter.onOff],
                 [0x66, "state_l8", tuya.valueConverter.onOff],
+                [
+                    14,
+                    "power_on_behavior",
+                    tuya.valueConverterBasic.lookup({
+                        off: tuya.enum(0),
+                        on: tuya.enum(1),
+                        memory: tuya.enum(2),
+                    }),
+                ],
+                [
+                    15,
+                    "indicator_mode",
+                    tuya.valueConverterBasic.lookup({
+                        none: tuya.enum(0),
+                        relay: tuya.enum(1),
+                        pos: tuya.enum(2),
+                    }),
+                ],
             ],
         },
         whiteLabel: [tuya.whitelabel("Nova Digital", "ZTS-8W-B", "8 Gang Switch", ["_TZE204_nvxorhcj"])],
